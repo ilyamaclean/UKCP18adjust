@@ -1,0 +1,30 @@
+Package: UKCP18adjust
+Type: Package
+Title: Correct UKCP18 to make it consistent with historic data
+Version: 0.1.0
+Author: person("Ilya", "Maclean", email = "i.m.d.maclean@exeter.ac.uk", role = "cre")
+Maintainer: The package maintainer <i.m.d.maclean@exeter.ac.uk>
+Description: The functions in the UKCP18adjust package convert UKCP18 daily data to hourly, and apply corrections to make the data consistent with historic data.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Remotes: ilyamaclean/microclima
+Imports:
+    abind,
+    gstat,
+    mgcv,
+    microclima,
+    ncdf4,
+    raster,
+    sp,
+    zoo
+RoxygenNote: 6.1.0
+Roxygen: list(markdown = TRUE) 
+Suggests:
+    devtools,
+    knitr,
+    rmarkdown,
+    testthat
+VignetteBuilder: knitr
+URL: https://github.com/ilyamaclean/UKCP18adjust/
+
