@@ -75,58 +75,6 @@ radfit <- function(sis) {
   m2 <- .semivar(hod, r)
   return(list(m1 = m1, m2 = m2))
 }
-#' calculate optical depth from radiation
-#' @param rad `spatialarray` of total surface incoming radiation
-#' @return a `spatialarray` of optical depths
-#' @import raster sp microclima
-#' @export
-#' @examples
-#' od <- opticaldepth(sis_2005)
-opticaldepth <- function(rad) {
-  a <- rad$arraydata
-  tme <- rad$times
-  r <- raster(a[,,1])
-  extent(r) <- rad$extent
-  crs(r) <- rad$crs
-  lats <- .latsfromr(r)
-  lons <- .lonsfromr(r)
-  jd <- julday(tme$year + 1900, tme$mon + 1, tme$mday)
-  mx <- max(a, na.rm = T)
-  if (mx > 10) a <- a * 0.0036
-  oda <- array(NA, dim = dim(a))
-  for (i in 1:dim(a)[1]) {
-    for (j in 1:dim(a)[2]) {
-      tst <- mean(a[i,j,], na.rm = T)
-      if (is.na(tst) == F) {
-        xy <- data.frame(x = lons[i,j], y = lats[i,j])
-        coordinates(xy) = ~x + y
-        proj4string(xy) = crs(r)
-        ll <- as.data.frame(spTransform(xy, CRS("+init=epsg:4326")))
-        am <- airmasscoef(tme$hour, ll$y, ll$x, jd, merid = 0)
-        radmj <- a[i,j,]
-        ext <- radmj / 4.87
-        # Compute optical depth for global radiation
-        od <- suppressWarnings(log(ext) / (- am))
-        od[od > 4.5] <- NA
-        od[od < 0] <- NA
-        # Adjusting optical depths
-        odd <- matrix(od, ncol = 24, byrow = T)
-        odd <- apply(odd, 1, mean, na.rm = T)
-        odd <- rep(odd, each = 24)
-        lN <- -0.78287 -0.43582 * log(odd)
-        N <- exp(lN)
-        od <- suppressWarnings(log(ext) / (- am^N))
-        od[od > 4.5] <- NA
-        od[od < 1e-6] <- NA
-        oda[i,j,] <- od
-      }
-    }
-  }
-  lst <- list(arraydata = oda, times = rad$times, crs = rad$crs,
-              extent = rad$extent, units = "unitless", description = "Cloud optical depth")
-  class(lst) <- "spatialarray"
-  return(lst)
-}
 #' Calculate hourly radiation from daily radiation
 #'
 #' @param dailysis an object of class spatialarray with hourly radiation values

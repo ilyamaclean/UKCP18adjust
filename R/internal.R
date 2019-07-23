@@ -1,4 +1,5 @@
 #' Create POSIXlt object of 3600 daily times for a  10 year UKCP18 dataset
+#' @export
 .tmecreate <- function(startyear) {
   yrs <- 0
   mts <- 0
@@ -54,6 +55,7 @@
 }
 #' Convert nc file to array
 #' @import ncdf4
+#' @export
 .nctoarray <- function(filein, varid = NA) {
   nc <- nc_open(filein)
   a <- aperm(ncvar_get(nc, varid = varid), c(2,1,3))
@@ -63,6 +65,7 @@
 }
 #' Crop array of extent e to extent ecrop
 #' @import raster
+#' @export
 .croparray <- function(a, e, ecrop) {
   r <- raster(a[,,1])
   extent(r) <- e
@@ -85,6 +88,7 @@
   return(list(aout = aout, eout = eout))
 }
 #' resample spatial array object to resolution of r
+#' @export
 .resamplearray <- function(ae, r, tme, Trace) {
   a <- ae$aout
   ao <- array(NA, dim = c(dim(r)[1:2], dim(a)[3]))
@@ -99,6 +103,7 @@
   ao
 }
 # Calculate latitudes of raster cells
+#' @export
 .latsfromr <- function(r) {
   e <- extent(r)
   lts <- rep(seq(e@ymax - res(r)[2] / 2, e@ymin + res(r)[2] / 2, length.out = dim(r)[1]), dim(r)[2])
@@ -106,6 +111,7 @@
   lts
 }
 # Calculate longitudes of raster cells
+#' @export
 .lonsfromr <- function(r) {
   e <- extent(r)
   lns <- rep(seq(e@xmin + res(r)[1] / 2, e@xmax - res(r)[1] / 2, length.out = dim(r)[2]), dim(r)[1])
@@ -114,6 +120,7 @@
   lns
 }
 # Calculate semivariogram
+#' @export
 .semivar <- function(a, r) {
   xx <- apply(a, 3, mean)
   sel <- which(is.na(xx) == F)
@@ -144,6 +151,7 @@
               sdev = mean(sdev)))
 }
 #' reates time sequence matching 10 years of UKCP18 data, with missing days set as NA
+#' @export
 .timesel <- function(startyear) {
   tme2 <- .tmecreate(startyear)
   scs <- seq(as.numeric(tme2[1]), as.numeric(tme2[3600]), by = 24 * 3600)
