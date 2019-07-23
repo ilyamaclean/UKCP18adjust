@@ -97,12 +97,12 @@ gamcorrect <- function(observed, ukcp, Trace = TRUE, positive = TRUE) {
   pred <- predict.gam(m1, newdata = data.frame(v2 = v2))
   if (Trace) {
     par(mar=c(7,7,5,2))
-    plot(v1 ~ v2, xlim = c(0,max(v2)), ylim = c(0,max(v1)),
+    plot(v1 ~ v2, xlim = c(min(v2), max(v2)), ylim = c(min(v1), max(v1)),
          xlab = "UKCP18 data",
          ylab = "Observed data", cex.axis = 2, cex.lab = 2, pch = 15,
          cex = 1, col = "gray")
     par(new=T)
-    plot(pred ~ v2, xlim = c(0,max(v2)), ylim = c(0,max(v1)),
+    plot(pred ~ v2, xlim = c(min(v2), max(v2)), ylim = c(min(v1), max(v1)),
          type = "l", lwd = 2, col = "red",
          xlab = "", ylab = "", cex.axis = 2, cex.lab = 2)
   }

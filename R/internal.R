@@ -150,7 +150,7 @@
   return(list(psill = mean(psill, na.rm = T), rge = mean(rge, na.rm = T),
               sdev = mean(sdev)))
 }
-#' reates time sequence matching 10 years of UKCP18 data, with missing days set as NA
+#' creates sequence matching 10 years of UKCP18 data, with missing days ommited
 #' @export
 .timesel <- function(startyear) {
   tme2 <- .tmecreate(startyear)

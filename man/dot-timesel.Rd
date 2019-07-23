@@ -2,10 +2,10 @@
 % Please edit documentation in R/internal.R
 \name{.timesel}
 \alias{.timesel}
-\title{reates time sequence matching 10 years of UKCP18 data, with missing days set as NA}
+\title{creates sequence matching 10 years of UKCP18 data, with missing days ommited}
 \usage{
 .timesel(startyear)
 }
 \description{
-reates time sequence matching 10 years of UKCP18 data, with missing days set as NA
+creates sequence matching 10 years of UKCP18 data, with missing days ommited
 }
