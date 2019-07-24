@@ -13,9 +13,11 @@
 #' @return a spatial array of hourly pressure in Pa
 #'
 #' @seealso [gamcorrect()]
-#' @import microclima mgcv
+#' @import raster microclima mgcv
 #' @export
 hourlypsl <- function(ukcp_psl, psl_gam, dem = NA) {
+  cat("Applying GAM correction to pressure \n")
+  ukcp_psl <- .applygam(ukcp_psl, psl_gam)
   tme <- ukcp_psl$times + 12 * 3600
   tme <- as.POSIXlt(tme)
   sel <- .timesel(tme$year[1] + 1900)
@@ -23,20 +25,20 @@ hourlypsl <- function(ukcp_psl, psl_gam, dem = NA) {
   tme2 <- as.POSIXlt(c(0:hrs) * 3600, origin = tme[1], tz = "GMT")
   dst <- "Sea-level pressure"
   a <- ukcp_psl$arraydata
-  if(class(dem) != logical) {
+  if(class(dem)[1] != "logical") {
     dd <- is_raster(dem)
     aj <- ((293 - 0.0065 * dd) / 293)^5.26
     dst <- "Elevation adjusted pressure"
   } else aj <- array(1, dim = dim(a)[1:2])
   aout <- array(NA, dim = c(dim(a)[1:2], length(tme2)))
+  cat("Spline interpolating to hourly\n")
   for (i in 1:dim(a)[1]) {
     for (j in 1:dim(a)[2]) {
       tst <- mean(a[i,j,], na.rm = T)
       if (is.na(tst) == F) {
         psl <- a[i,j,]
-        psl2 <- predict.gam(psl_gam, newdata = data.frame(v2 = psl))
-        psl2 <- psl2 * aj[i,j]
-        xy <- spline(as.numeric(tme), psl2, n = length(tme2))
+        psl <- psl * aj[i,j]
+        xy <- spline(as.numeric(tme), psl, n = length(tme2))
         aout[i,j,] <- xy$y
       }
     }
@@ -71,6 +73,8 @@ hourlypsl <- function(ukcp_psl, psl_gam, dem = NA) {
 #' @import microclima zoo mgcv
 #' @export
 hourlyhuss <- function(ukcp_huss, hus_gam, htemps = NA, hpre = NA) {
+  cat("Applying GAM correction to humidity \n")
+  ukcp_huss <- .applygam(ukcp_huss, hus_gam)
   tme <- ukcp_huss$times + 12 * 3600
   tme <- as.POSIXlt(tme)
   sel <- .timesel(tme$year[1] + 1900)
@@ -78,23 +82,22 @@ hourlyhuss <- function(ukcp_huss, hus_gam, htemps = NA, hpre = NA) {
   tme2 <- as.POSIXlt(c(0:hrs) * 3600, origin = tme[1], tz = "GMT")
   a <- ukcp_huss$arraydata
   aout <- array(NA, dim = c(dim(a)[1:2], length(tme2)))
+  cat("Spline interpolating to hourly\n")
   for (i in 1:dim(a)[1]) {
     for (j in 1:dim(a)[2]) {
       tst <- mean(a[i,j,], na.rm = T)
       if (is.na(tst) == F) {
-        hus <- a[i,j,] * 1e5
-        hus2 <- predict.gam(hus_gam, newdata = data.frame(v2 = hus))
-        xy <- spline(as.numeric(tme), hus2, n = length(tme2))
+        hus <- a[i,j,]
+        xy <- spline(as.numeric(tme), hus, n = length(tme2))
         hus3 <- xy$y
         if (class(htemps) != "logical") {
           tc <- htemps[i,j,]
           if (class(pre) != "logical") {
             pr <- hpre[i,j,]
           } else pr <- 101300
-          rh <- suppressWarnings(humidityconvert(hus3/1e5, intype = "specific", tc, pr)$relative)
+          rh <- suppressWarnings(humidityconvert(hus3, intype = "specific", tc, pr)$relative)
           rh[rh > 100] <- 100
           hus3 <- humidityconvert(rh, intype = "relative", tc, pr)$specific
-          hus3 <- hus3 * 1e5
         }
         aout[i,j,] <- hus3
       }
