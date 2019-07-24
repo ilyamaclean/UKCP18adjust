@@ -79,6 +79,11 @@
 #' }
 #' @source \url{http://data.ceda.ac.uk/badc/ukcp18/}
 "tmx_ukcpdaily"
+#' General Additive Model cofficients for correcting UKCP18 temperature data
+#'
+#' An object of class `gam` containing coefficients for correcting UKCP18 temperatures
+#' data, as returned by [gamcorrect()].
+"tc_gam"
 #' Daily minimum temperature (UKCP18).
 #'
 #' An object of class spatialarray containing daily minimum temperature values in Cornwall for

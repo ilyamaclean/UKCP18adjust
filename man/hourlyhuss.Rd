@@ -7,14 +7,14 @@
 hourlyhuss(ukcp_huss, hus_gam, htemps = NA, hpre = NA)
 }
 \arguments{
-\item{ukcp_huss}{a \code{spatialarray} of daily specific humdidity (Kg / Kg)}
+\item{ukcp_huss}{a \code{spatialarray} of daily specific humidity (Kg / Kg)}
 
 \item{hus_gam}{a \code{gam} object of correction coefficients to apply to
-pecific humdidity data as returned by \code{\link[=gamcorrect]{gamcorrect()}}}
+specific humdidity data as returned by \code{\link[=gamcorrect]{gamcorrect()}}}
 
-\item{htemps}{optional vector of hourly temperatures (deg C - see details)}
+\item{htemps}{optional spatial array of hourly temperatures (deg C - see details)}
 
-\item{hpre}{optional vector of hourly pressure (Pa - see details)}
+\item{hpre}{optional spatial array  of hourly pressure (Pa - see details)}
 }
 \value{
 a spatial array of hourly specific humidities in Kg / Kg x 100,000 stored
