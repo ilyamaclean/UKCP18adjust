@@ -169,12 +169,17 @@
   sel
 }
 #' Apply gam model to spatial array to adjust data
+#' @import mgcv
 #' @export
-.applygam <- function(a, mod_gam) {
+.applygam <- function(a, mod_gam, keepzero = TRUE) {
   x1 <- a$arraydata
   x1 <- as.vector(x1)
-  p1 <- predict.gam(mod_gam, newdata = data.frame(v2 = x2))
-  p1 <- array(p1, dim = dim(a$arraydata))
-  a$arraydata <- p1
+  if (keepzero) {
+    sel <- which(is.na(x1) == F & x1 !=0)
+  } else sel <- which(is.na(x1) == F)
+    p1 <- predict.gam(mod_gam, newdata = data.frame(v2 = x1[sel]))
+  x1[sel] <- p1
+  x1 <- array(x1, dim = dim(a$arraydata))
+  a$arraydata <- x1
   return(a)
 }

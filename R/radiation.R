@@ -89,7 +89,7 @@ radfit <- function(sis) {
 #'   \item{units}{units of `arraydata`}
 #'   \item{description}{character description of `arraydata`}
 #' }
-#' @import raster microclima zoo
+#' @import raster microclima zoo mgcv
 #' @export
 #' @seealso [radfit()]
 #' @details Hourly radiation values are computed by deriving daily optical depths
@@ -103,9 +103,10 @@ radfit <- function(sis) {
 #' modfit <- radfit(sis_2005)
 #' # Takes a few minutes to run
 #' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000)
-hourlysis <- function(dailysis, modfit, startyear, rad_gam = NA, Trace = T) {
+hourlysis <- function(dailysis, modfit, rad_gam = NA, Trace = T) {
   a <- dailysis$arraydata
   tme <- dailysis$times
+  startyear <- tme$year[1] + 1900
   r <- raster(a[,,1])
   extent(r) <- dailysis$extent
   crs(r) <- dailysis$crs
@@ -234,30 +235,25 @@ hourlysis <- function(dailysis, modfit, startyear, rad_gam = NA, Trace = T) {
        extent = dailysis$extent, units = "Watts / m^2",
        description = "Total incoming shortwave radiation")
   class(lst) <- "spatialarray"
-  if (class(rad_gam) != "logical") lst <- .applygam(lst, rad_gam)
+  if (class(rad_gam[1]) != "logical") {
+    cat("Applying GAM correction to radiation \n")
+    lst <- .applygam(lst, rad_gam)
+  }
+  lst$arraydata[lst$arraydata > 1352.778] <- 1352.778
   return(lst)
 }
-#' Calculate and save corrected radiation by year
+#' Partition radiation into its direct and diffuse components
 #'
-#' @param ukcpsishourly a `spatialarray` of hourly uncorrected
-#' surface incoming solar irradiance (W / m^2) as returned by [hourlysis()]
-#' @param rad_gam a `gam` object of correction coefficients to apply to
-#' radiation data as returned by [gamcorrect()]
-#' @param years years for which data are required. Must overlap with years
-#' in `ukcpsishourly`
-#' @param destfolder folder in which to save data (see details).If it does
-#' not contain an absolute path, the directory name is relative to the
-#' current working directory, [getwd()]. Tilde-expansion is performed where
-#' supported.
-#'
-#' @details This function applies a correction to `ukcpsishourly` using
-#' parameters in `rad_gam`. Total surface incoming solar irradiance is then
-#' aparitioned between direct and diffuse, and direct irradiance normal to
-#' solar beam computed. A cloud cover coefficient is also computed from the
-#' ratio of received to clearsky radiation. The resulting data are saved seperately
-#' by year as `spatialarrays` in three subfolders of `destfolder`.
-#'
-#' @seealso [hourlysis()] [gamcorrect()] [microclima::difprop()]
+#' @param ukcpsishourly a `spatialarray` of hourly surface incoming solar irradiance
+#' (W / m^2) as returned by [hourlysis()]
+#' @return a list of three spatialarrays
+#' \describe{
+#'   \item{dni}{A `spatialarray` of direct radiation normal to the solar beam (W / m^2)}
+#'   \item{dif}{A `spatialarray` of horizontal diffuse radiation (W / m^2)}
+#'   \item{cfc}{A `spatialarray` of cloud cover derived as the ratio of actual to
+#'   clear-sky radiation (Percentage)}
+#'}
+#' @seealso [hourlysis()] [microclima::difprop()]
 #' @import microclima zoo mgcv
 #' @export
 #'
@@ -265,11 +261,10 @@ hourlysis <- function(dailysis, modfit, startyear, rad_gam = NA, Trace = T) {
 #' # Takes a few seconds to run
 #' modfit <- radfit(sis_2005)
 #' # Takes a few minutes to run
-#' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000)
-#' yrs <- c(2001:2009)
-#' radbyyear(ukcpsishourly, rad_gam, yrs, destfolder = "C:/radiation/")
-radbyyear <- function(ukcpsishourly, rad_gam, years, destfolder) {
-  dir.create(destfolder, showWarnings = FALSE)
+#' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000, rad_gam)
+#' radcom <- radsplit(ukcpsishourly)
+#' attributes(radcom)
+radsplit <- function(ukcpsishourly) {
   a <- ukcpsishourly$arraydata
   tme <- ukcpsishourly$times
   r <- raster(a[,,1])
@@ -278,90 +273,74 @@ radbyyear <- function(ukcpsishourly, rad_gam, years, destfolder) {
   lats <- .latsfromr(r)
   lons <- .lonsfromr(r)
   jd <- julday(tme$year + 1900, tme$mon + 1, tme$mday)
-  d.dni <- paste0(destfolder, "dni/")
-  d.dif <- paste0(destfolder, "dif/")
-  d.cfc <- paste0(destfolder, "cfc/")
-  dir.create(d.dni, showWarnings = FALSE)
-  dir.create(d.dif, showWarnings = FALSE)
-  dir.create(d.cfc, showWarnings = FALSE)
-  for (yr in years) {
-    sel <- which(tme$year + 1900 == yr)
-    ay <- a[,,sel]
-    dni <- ay
-    dif <- ay
-    cfc <- ay
-    for (i in 1:dim(a)[1]) {
-      for (j in 1:dim(a)[2]) {
-        tst <- mean(ay[i,j,], na.rm = T)
-        if (is.na(tst) == F) {
-          # Calculate lat and long
-          xy <- data.frame(x = lons[i,j], y = lats[i,j])
-          coordinates(xy) = ~x + y
-          proj4string(xy) = crs(r)
-          ll <- as.data.frame(spTransform(xy, CRS("+init=epsg:4326")))
-          rad <- ay[i,j,]
-          sis <- predict.gam(rad_gam, newdata = data.frame(v2 = rad))
-          sis[sis > 1352.778] <- 1352.778
-          dp <- difprop(sis, jd[sel], tme$hour[sel], ll$y, ll$x, hourly = TRUE,
-                        watts = TRUE, merid = 0)
-          si <- siflat(tme$hour[sel], ll$y, ll$x, jd[sel], merid = 0)
-          pdif <- dp * sis
-          pdni <- ((1 - dp) * sis) / si
-          pdni[is.na(pdni)] <- 0
-          pdni[pdni > 1352.778] <- 1352.778
-          pdif[pdif > 1352.778] <- 1352.778
-          # Compute maximum potential radiation
-          # Calculate optical depth
-          ext <- sis / 1352.778
-          am <- airmasscoef(tme$hour[sel], ll$y, ll$x, jd[sel], merid = 0)
-          od <- log(ext) / (- am)
-          # Adjusting optical depths
-          odd <- matrix(od, ncol = 24, byrow = T)
-          odd <- apply(odd, 1, mean, na.rm = T)
-          odd <- rep(odd, each = 24)
-          lN <- -0.78287 -0.43582 * log(odd)
-          N <- exp(lN)
-          od <- suppressWarnings(log(ext) / (- am^N))
-          od[od > 10] <- NA
-          od[od < 0] <- NA
-          # Maximum radiation
-          mdir <- si * 1352.778
-          n <- sis / mdir
-          n[n > 1] <- NA
-          n[n < 0] <- 0
-          le <- length(n)
-          n[1] <- mean(n[1:24], na.rm = T)
-          n[le] <- mean(n[(le-24):le], na.rm = T)
-          n <- na.approx(n)
-          dni[i,j,] <- pdni
-          dif[i,j,] <- pdif
-          cfc[i,j,] <- 1 - n
-        }
+  dni <- a
+  dif <- a
+  cfc <- a
+  for (i in 1:dim(a)[1]) {
+    for (j in 1:dim(a)[2]) {
+      tst <- mean(a[i,j,], na.rm = T)
+      if (is.na(tst) == F) {
+        # Calculate lat and long
+        xy <- data.frame(x = lons[i,j], y = lats[i,j])
+        coordinates(xy) = ~x + y
+        proj4string(xy) = crs(r)
+        ll <- as.data.frame(spTransform(xy, CRS("+init=epsg:4326")))
+        sis <- a[i,j,]
+        sis[sis > 1352.778] <- 1352.778
+        dp <- difprop(sis, jd, tme$hour, ll$y, ll$x, hourly = TRUE,
+                      watts = TRUE, merid = 0)
+        si <- siflat(tme$hour, ll$y, ll$x, jd, merid = 0)
+        pdif <- dp * sis
+        pdni <- ((1 - dp) * sis) / si
+        pdni[is.na(pdni)] <- 0
+        pdni[pdni > 1352.778] <- 1352.778
+        pdif[pdif > 1352.778] <- 1352.778
+        # Compute maximum potential radiation
+        # Calculate optical depth
+        ext <- sis / 1352.778
+        am <- airmasscoef(tme$hour, ll$y, ll$x, jd, merid = 0)
+        od <- log(ext) / (- am)
+        # Adjusting optical depths
+        odd <- matrix(od, ncol = 24, byrow = T)
+        odd <- apply(odd, 1, mean, na.rm = T)
+        odd <- rep(odd, each = 24)
+        lN <- -0.78287 -0.43582 * log(odd)
+        N <- exp(lN)
+        od <- suppressWarnings(log(ext) / (- am^N))
+        od[od > 10] <- NA
+        od[od < 0] <- NA
+        # Maximum radiation
+        mdir <- si * 1352.778
+        n <- sis / mdir
+        n[n > 1] <- NA
+        n[n < 0] <- 0
+        le <- length(n)
+        n[1] <- mean(n[1:24], na.rm = T)
+        n[le] <- mean(n[(le-24):le], na.rm = T)
+        n <- na.approx(n)
+        dni[i,j,] <- pdni
+        dif[i,j,] <- pdif
+        cfc[i,j,] <- 1 - n
       }
     }
-    fo1 <- paste0(d.dni, "dni_", yr, ".R")
-    fo2 <- paste0(d.dif, "dif_", yr, ".R")
-    fo3 <- paste0(d.cfc, "cfc_", yr, ".R")
-    xx1 <- round(dni, 0)
-    xx2 <- round(dif, 0)
-    xx3 <- round(cfc * 100, 0)
-    xx1 <- array(as.integer(xx1), dim = dim(dni))
-    xx2 <- array(as.integer(xx2), dim = dim(dif))
-    xx3 <- array(as.integer(xx3), dim = dim(cfc))
-    ao1 <- list(arraydata = xx1, times = tme[sel], crs = ukcpsishourly$crs,
-                extent = ukcpsishourly$extent, units = "Watts / m^2",
-                description = "Direct Normal irradiance")
-    ao2 <- list(arraydata = xx2, tme = tme[sel], crs = ukcpsishourly$crs,
-                extent = aaukcpsishourly$extent, units = "Watts / m^2",
-                description = "Diffuse horizontal irradiance")
-    ao3 <- list(arraydata = xx3, tme = tme[sel], crs = ukcpsishourly$crs,
-                extent = ukcpsishourly$extent, units = "Percentage",
-                description = "Cloud cover")
-    class(ao1) <- "spatialarray"
-    class(ao2) <- "spatialarray"
-    class(ao3) <- "spatialarray"
-    save(ao1, file = fo1)
-    save(ao2, file = fo2)
-    save(ao3, file = fo3)
   }
+  xx1 <- round(dni, 0)
+  xx2 <- round(dif, 0)
+  xx3 <- round(cfc * 100, 0)
+  xx1 <- array(as.integer(xx1), dim = dim(dni))
+  xx2 <- array(as.integer(xx2), dim = dim(dif))
+  xx3 <- array(as.integer(xx3), dim = dim(cfc))
+  ao1 <- list(arraydata = xx1, times = tme[sel], crs = ukcpsishourly$crs,
+              extent = ukcpsishourly$extent, units = "Watts / m^2",
+              description = "Direct Normal irradiance")
+  ao2 <- list(arraydata = xx2, tme = tme[sel], crs = ukcpsishourly$crs,
+              extent = ukcpsishourly$extent, units = "Watts / m^2",
+              description = "Diffuse horizontal irradiance")
+  ao3 <- list(arraydata = xx3, tme = tme[sel], crs = ukcpsishourly$crs,
+              extent = ukcpsishourly$extent, units = "Percentage",
+              description = "Cloud cover")
+  class(ao1) <- "spatialarray"
+  class(ao2) <- "spatialarray"
+  class(ao3) <- "spatialarray"
+  return(list(dni = ao1, dif = ao2, cfc = ao3))
 }

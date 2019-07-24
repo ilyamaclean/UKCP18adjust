@@ -4,7 +4,7 @@
 \alias{hourlysis}
 \title{Calculate hourly radiation from daily radiation}
 \usage{
-hourlysis(dailysis, modfit, startyear, rad_gam = NA, Trace = T)
+hourlysis(dailysis, modfit, rad_gam = NA, Trace = T)
 }
 \arguments{
 \item{dailysis}{an object of class spatialarray with hourly radiation values}

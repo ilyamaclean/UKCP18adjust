@@ -4,7 +4,7 @@
 \alias{.applygam}
 \title{Apply gam model to spatial array to adjust data}
 \usage{
-.applygam(a, mod_gam)
+.applygam(a, mod_gam, keepzero = TRUE)
 }
 \description{
 Apply gam model to spatial array to adjust data
