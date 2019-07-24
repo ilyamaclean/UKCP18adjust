@@ -100,3 +100,8 @@
 #' }
 #' @source \url{http://data.ceda.ac.uk/badc/ukcp18/}
 "tmn_ukcpdaily"
+#' General Additive Model cofficients for correcting UKCP18 wind speed data
+#'
+#' An object of class `gam` containing coefficients for correcting UKCP18 wind speed
+#' data, as returned by [gamcorrect()].
+"ws_gam"

@@ -71,11 +71,9 @@ hourlypsl <- function(ukcp_psl, psl_gam, dem = NA) {
 #' If temperature data are supplied, hourly specific humdidities are conveted
 #' to relative humidity, which is capped at 100 prior to converting back to
 #' specific humdidity. Hourly pressure data are used in converting to relative
-#' humidity. If not supplied, then pressure is assumed to be 101300 Pa. Not that
-#' returned values are multiplied by 100,000 to renable storing as integers
+#' humidity. If not supplied, then pressure is assumed to be 101300 Pa.
 #'
-#' @return a spatial array of hourly specific humidities in Kg / Kg x 100,000 stored
-#' as an integer.
+#' @return a spatial array of hourly specific humidities in Kg / Kg
 #'
 #' @seealso [gamcorrect()]
 #' @import microclima zoo mgcv
@@ -138,6 +136,7 @@ hourlyhuss <- function(ukcp_huss, hus_gam, htemps = NA, hpre = NA) {
 #' @param dif a `spatialarray` of hourly horizontal diffuse radiation (W / m^2) as returned by [radsplit()]
 #' @param tmin a `spatialarray` of daily minimum temperature (deg C)
 #' @param tmax a `spatialarray` of daily maximum temperature (deg C)
+#' @param dem a raster of eleveations of the same resolution and extent as `huss`
 #' @param dtr_gam a `gam` object of correction coefficients to apply to
 #' diurnal temperature ranges as returned by [gamcorrect()]
 #' @param tc_gam a `gam` object of correction coefficients to apply to
@@ -151,7 +150,11 @@ hourlyhuss <- function(ukcp_huss, hus_gam, htemps = NA, hpre = NA) {
 #' @seealso [hourlyhuss()] [hourlypsl()] [radsplit()] [gamcorrect()]  [microclima::hourlytemp()]
 #' @import microclima zoo mgcv raster
 #' @export
-hourlytc <- function(huss, pre, cfc, dni, dif, tmin, tmax, dtr_gam = dtr_gam, tc_gam = tc_gam) {
+hourlytc <- function(huss, pre, cfc, dni, dif, tmin, tmax, dem, dtr_gam = dtr_gam, tc_gam = tc_gam) {
+  dem60k <- aggregate(dem5k, 12)
+  dem60k <- resample(dem60k, dem5k)
+  demd <- dem5k - dem60k
+  demd <- is_raster(demd)
   dys <- length(huss$times) / 24  - 1
   tme <- as.POSIXlt(c(0:dys) * 3600 * 24, origin = tmin$times[1], tz = "GMT")
   jd <- julday(tme$year + 1900, tme$mon +1, tme$mday)
@@ -192,7 +195,8 @@ hourlytc <- function(huss, pre, cfc, dni, dif, tmin, tmax, dtr_gam = dtr_gam, tc
                          mintemp = tmn,
                          maxtemp =tmx,
                          lat = ll$y, long = ll$x, merid = 0)
-        tout[i,j,] <- ht
+        lr <- lapserate(ht, huss$arraydata[i,j,], pre$arraydata[i,j,])
+        tout[i,j,] <- ht + lr * demd[i,j]
       }
     }
   }
@@ -201,6 +205,74 @@ hourlytc <- function(huss, pre, cfc, dni, dif, tmin, tmax, dtr_gam = dtr_gam, tc
              description = "Hourly temperature")
   class(ao) <- "spatialarray"
   return(ao)
+}
+#' Calculate hourly corrected wind speed and direction from daily data
+#'
+#' @param ukcp_uw a `spatialarray` of u vector of daily wind speed (m / s)
+#' @param ukcp_uw a `spatialarray` of v vector of daily wind speed (m / s)
+#' @param ws_gam a `gam` object of correction coefficients to apply to
+#' wind speed data as returned by [gamcorrect()]
+#' @details This function interpolates u and v wind vectors to hourly and then
+#' calculates wind speed and direction. It then applies a correction
+#' using parameters in `ws_gam`.
+#'
+#' @return a list of two spatialarrays
+#' \describe{
+#'   \item{ws}{A `spatialarray` of hourly wind speed (m /s)}
+#'   \item{wd}{A `spatialarray` of hourly wind direction (degrees)}
+#'}
+#' @seealso [gamcorrect()]
+#' @import microclima raster mgcv
+#' @export
+hourlywind <- function(ukcp_uw, ukcp_vw, ws_gam) {
+  u <- ukcp_uw$arraydata
+  v <- ukcp_vw$arraydata
+  tme <- ukcp_uw$times + 12 * 3600
+  tme <- as.POSIXlt(tme)
+  sel <- .timesel(tme$year[1] + 1900)
+  hrs <- sel[length(sel)] * 24 - 24
+  # Correct times
+  tme2 <- as.POSIXlt(c(0:hrs) * 3600, origin = tme[1], tz = "GMT")
+  tme2 <- as.numeric(tme2)
+  tme2 <- c(tme2[1] - c(24:1) * 3600, tme2, tme2[length(tme2)] + c(1:24) * 3600)
+  tme2 <- as.POSIXlt(tme2, origin = "1970-01-01", tz = "GMT")
+  tme <- as.numeric(tme)
+  tme <- c(tme[1] - 24 * 3600, tme, tme[length(tme)] + 24 * 3600)
+  tme <- as.POSIXlt(tme, origin = "1970-01-01", tz = "GMT")
+  selt <- c(13:(length(tme2)-13))
+  aout1 <- array(NA, dim = c(dim(a)[1:2], length(selt)))
+  aout2 <- aout1
+  cat("Spline interpolating to hourly\n")
+  for (i in 1:dim(u)[1]) {
+    for (j in 1:dim(u)[2]) {
+      tst <- mean(a[i,j,], na.rm = T)
+      if (is.na(tst) == F) {
+        uw <- u[i,j,]
+        vw <- v[i,j,]
+        uw <- c(uw[1], uw, uw[length(uw)])
+        vw <- c(vw[1], vw, vw[length(vw)])
+        xy1 <- spline(as.numeric(tme), uw, n = length(tme2))
+        xy2 <- spline(as.numeric(tme), vw, n = length(tme2))
+        uw2 <- xy1$y[selt]
+        vw2 <- xy2$y[selt]
+        ws <- sqrt(uw2^2 + vw2^2)
+        ws <- predict.gam(ws_gam, newdata = data.frame(v2 = ws))
+        wd <- atan2(uw2, vw2) * 180/pi + 180
+        wd <- round(wd, 0)%%360
+        aout1[i,j,] <- ws
+        aout2[i,j,] <- wd
+      }
+    }
+  }
+  ao1 <- list(arraydata = aout1, times = tme2[selt], crs = ukcp_uw$crs,
+              extent = ukcp_uw$extent, units = "m / s",
+              description = "Wind speed")
+  ao2 <- list(arraydata = aout2, times = tme2[selt], crs = ukcp_uw$crs,
+              extent = ukcp_uw$extent, units = "Degrees",
+              description = "Wind direction")
+  class(ao1) <- "spatialarray"
+  class(ao2) <- "spatialarray"
+  return(list(ws = ao1, wd = ao2))
 }
 
 

@@ -17,8 +17,7 @@ specific humdidity data as returned by \code{\link[=gamcorrect]{gamcorrect()}}}
 \item{hpre}{optional spatial array  of hourly pressure (Pa - see details)}
 }
 \value{
-a spatial array of hourly specific humidities in Kg / Kg x 100,000 stored
-as an integer.
+a spatial array of hourly specific humidities in Kg / Kg
 }
 \description{
 Calculate hourly corrected specific humidity from daily data
@@ -29,8 +28,7 @@ parameters in \code{hus_gam} and then interpolates daily data to hourly.
 If temperature data are supplied, hourly specific humdidities are conveted
 to relative humidity, which is capped at 100 prior to converting back to
 specific humdidity. Hourly pressure data are used in converting to relative
-humidity. If not supplied, then pressure is assumed to be 101300 Pa. Not that
-returned values are multiplied by 100,000 to renable storing as integers
+humidity. If not supplied, then pressure is assumed to be 101300 Pa.
 }
 \seealso{
 \code{\link[=gamcorrect]{gamcorrect()}}

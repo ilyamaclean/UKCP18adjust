@@ -4,7 +4,7 @@
 \alias{hourlytc}
 \title{Calculate hourly temperature from daily max and min}
 \usage{
-hourlytc(huss, pre, cfc, dni, dif, tmin, tmax, dtr_gam = dtr_gam,
+hourlytc(huss, pre, cfc, dni, dif, tmin, tmax, dem, dtr_gam = dtr_gam,
   tc_gam = tc_gam)
 }
 \arguments{
@@ -21,6 +21,8 @@ hourlytc(huss, pre, cfc, dni, dif, tmin, tmax, dtr_gam = dtr_gam,
 \item{tmin}{a \code{spatialarray} of daily minimum temperature (deg C)}
 
 \item{tmax}{a \code{spatialarray} of daily maximum temperature (deg C)}
+
+\item{dem}{a raster of eleveations of the same resolution and extent as \code{huss}}
 
 \item{dtr_gam}{a \code{gam} object of correction coefficients to apply to
 diurnal temperature ranges as returned by \code{\link[=gamcorrect]{gamcorrect()}}}
