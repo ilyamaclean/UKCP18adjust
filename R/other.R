@@ -110,7 +110,7 @@ hourlyhuss <- function(ukcp_huss, hus_gam, htemps = NA, hpre = NA) {
         hus3 <- hus3[selt]
         if (class(htemps) != "logical") {
           tc <- htemps$arraydata[i,j,]
-          if (class(pre) != "logical") {
+          if (class(hpre) != "logical") {
             pr <- hpre$arraydata[i,j,]
           } else pr <- 101300
           rh <- suppressWarnings(humidityconvert(hus3, intype = "specific", tc, pr)$relative)
