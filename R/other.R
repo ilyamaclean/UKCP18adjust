@@ -19,7 +19,7 @@ hourlypsl <- function(ukcp_psl, psl_gam, dem = NA) {
   cat("Applying GAM correction to pressure \n")
   ukcp_psl <- .applygam(ukcp_psl, psl_gam)
   a <- ukcp_psl$arraydata
-  tme <- ukcp_huss$times + 12 * 3600
+  tme <- ukcp_psl$times + 12 * 3600
   tme <- as.POSIXlt(tme)
   sel <- .timesel(tme$year[1] + 1900)
   hrs <- sel[length(sel)] * 24 - 24
