@@ -4,8 +4,7 @@
 \alias{hourlytc}
 \title{Calculate hourly temperature from daily max and min}
 \usage{
-hourlytc(huss, pre, cfc, dni, dif, tmin, tmax, dem, dtr_gam = dtr_gam,
-  tc_gam = tc_gam)
+hourlytc(huss, pre, cfc, dni, dif, tmin, tmax, dem, dtr_gam, tc_gam)
 }
 \arguments{
 \item{huss}{a \code{spatialarray} of hourly specific humidities (Kg / Kg) as returned by \code{\link[=hourlyhuss]{hourlyhuss()}}}

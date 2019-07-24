@@ -150,7 +150,7 @@ hourlyhuss <- function(ukcp_huss, hus_gam, htemps = NA, hpre = NA) {
 #' @seealso [hourlyhuss()] [hourlypsl()] [radsplit()] [gamcorrect()]  [microclima::hourlytemp()]
 #' @import microclima zoo mgcv raster
 #' @export
-hourlytc <- function(huss, pre, cfc, dni, dif, tmin, tmax, dem, dtr_gam = dtr_gam, tc_gam = tc_gam) {
+hourlytc <- function(huss, pre, cfc, dni, dif, tmin, tmax, dem, dtr_gam, tc_gam) {
   dem60k <- aggregate(dem5k, 12)
   dem60k <- resample(dem60k, dem5k)
   demd <- dem5k - dem60k
@@ -240,12 +240,12 @@ hourlywind <- function(ukcp_uw, ukcp_vw, ws_gam) {
   tme <- c(tme[1] - 24 * 3600, tme, tme[length(tme)] + 24 * 3600)
   tme <- as.POSIXlt(tme, origin = "1970-01-01", tz = "GMT")
   selt <- c(13:(length(tme2)-13))
-  aout1 <- array(NA, dim = c(dim(a)[1:2], length(selt)))
+  aout1 <- array(NA, dim = c(dim(u)[1:2], length(selt)))
   aout2 <- aout1
   cat("Spline interpolating to hourly\n")
   for (i in 1:dim(u)[1]) {
     for (j in 1:dim(u)[2]) {
-      tst <- mean(a[i,j,], na.rm = T)
+      tst <- mean(u[i,j,], na.rm = T)
       if (is.na(tst) == F) {
         uw <- u[i,j,]
         vw <- v[i,j,]
