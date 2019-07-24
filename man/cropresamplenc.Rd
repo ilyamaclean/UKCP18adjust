@@ -33,3 +33,8 @@ a list containing the following components:
 \description{
 Resample nc file to spatial array
 }
+\details{
+Currently, the UKCP18 nc files contain errors in both the times and
+the defined coordinate reference system. These are corrected in the function, but
+users are advised to check their data.
+}

@@ -168,3 +168,13 @@
   sel <- sel[is.na(sel) == F]
   sel
 }
+#' Apply gam model to spatial array to adjust data
+#' @export
+.applygam <- function(a, mod_gam) {
+  x1 <- a$arraydata
+  x1 <- as.vector(x1)
+  p1 <- predict.gam(mod_gam, newdata = data.frame(v2 = x2))
+  p1 <- array(p1, dim = dim(a$arraydata))
+  a$arraydata <- p1
+  return(a)
+}

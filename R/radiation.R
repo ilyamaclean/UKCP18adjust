@@ -103,7 +103,7 @@ radfit <- function(sis) {
 #' modfit <- radfit(sis_2005)
 #' # Takes a few minutes to run
 #' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000)
-hourlysis <- function(dailysis, modfit, startyear, Trace = T) {
+hourlysis <- function(dailysis, modfit, startyear, rad_gam = NA, Trace = T) {
   a <- dailysis$arraydata
   tme <- dailysis$times
   r <- raster(a[,,1])
@@ -234,6 +234,7 @@ hourlysis <- function(dailysis, modfit, startyear, Trace = T) {
        extent = dailysis$extent, units = "Watts / m^2",
        description = "Total incoming shortwave radiation")
   class(lst) <- "spatialarray"
+  if (class(rad_gam) != "logical") lst <- .applygam(lst, rad_gam)
   return(lst)
 }
 #' Calculate and save corrected radiation by year
@@ -241,11 +242,11 @@ hourlysis <- function(dailysis, modfit, startyear, Trace = T) {
 #' @param ukcpsishourly a `spatialarray` of hourly uncorrected
 #' surface incoming solar irradiance (W / m^2) as returned by [hourlysis()]
 #' @param rad_gam a `gam` object of correction coefficients to apply to
-#' radiation data
+#' radiation data as returned by [gamcorrect()]
 #' @param years years for which data are required. Must overlap with years
 #' in `ukcpsishourly`
 #' @param destfolder folder in which to save data (see details).If it does
-#' not contain an absolute path, the file name is relative to the
+#' not contain an absolute path, the directory name is relative to the
 #' current working directory, [getwd()]. Tilde-expansion is performed where
 #' supported.
 #'

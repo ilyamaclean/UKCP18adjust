@@ -11,13 +11,13 @@ radbyyear(ukcpsishourly, rad_gam, years, destfolder)
 surface incoming solar irradiance (W / m^2) as returned by \code{\link[=hourlysis]{hourlysis()}}}
 
 \item{rad_gam}{a \code{gam} object of correction coefficients to apply to
-radiation data}
+radiation data as returned by \code{\link[=gamcorrect]{gamcorrect()}}}
 
 \item{years}{years for which data are required. Must overlap with years
 in \code{ukcpsishourly}}
 
 \item{destfolder}{folder in which to save data (see details).If it does
-not contain an absolute path, the file name is relative to the
+not contain an absolute path, the directory name is relative to the
 current working directory, \code{\link[=getwd]{getwd()}}. Tilde-expansion is performed where
 supported.}
 }

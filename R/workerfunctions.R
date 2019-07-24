@@ -19,6 +19,9 @@
 #'   \item{units}{Units of `arraydata`}
 #'   \item{description}{Description of `arraydata`}
 #' }
+#' @details Currently, the UKCP18 nc files contain errors in both the times and
+#' the defined coordinate reference system. These are corrected in the function, but
+#' users are advised to check their data.
 #' @import ncdf4 raster
 #' @export
 cropresamplenc <- function(file, r, Trace = TRUE) {
@@ -27,6 +30,8 @@ cropresamplenc <- function(file, r, Trace = TRUE) {
   tme <- as.POSIXlt(tme * 3600, origin = "1970-01-01", tz = "GMT")
   a <- .nctoarray(file)
   rx <- suppressWarnings(raster(file, band = 1))
+  # Correct prjection error
+  crs(rx) <- "+init=epsg:27700"
   ecrop <- extent(r)
   e <- extent(rx)
   ae <- .croparray(a, e, ecrop)
@@ -35,6 +40,8 @@ cropresamplenc <- function(file, r, Trace = TRUE) {
   varname <- names(ncv)[1]
   nca <- ncatt_get(nc, varid = varname)
   nc_close(nc)
+  # Correct time error
+  tme <- .tmecreate(tme$year[1] + 1900)
   lst <- list(arraydata = ao, times = tme, crs = crs(r),
               extent = ecrop, units = nca[[3]], description = nca[[2]])
   class(lst) <- "spatialarray"
@@ -88,10 +95,10 @@ gamcorrect <- function(observed, ukcp, Trace = TRUE, positive = TRUE) {
   le2 <- length(v2)
   lgt <- min(le1, le2)
   if (lgt > 10000) {
-    s1 <- floor(seq(101, le1 - 100, length.out = 9800))
-    s2 <- floor(seq(101, le2 - 100, length.out = 9800))
-    v1 <- c(v1[1:100], v1[s1], v1[(le1-100):le1])
-    v2 <- c(v2[1:100], v2[s2], v2[(le2-100):le2])
+    s1 <- floor(seq(1, le1, length.out = 10000))
+    s2 <- floor(seq(1, le2, length.out = 10000))
+    v1 <- v1[s1]
+    v2 <- v2[s2]
   }
   m1 <- gam(v1~s(v2))
   pred <- predict.gam(m1, newdata = data.frame(v2 = v2))

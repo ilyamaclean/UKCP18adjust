@@ -15,12 +15,17 @@
 #' An object of class `gam` containing coefficients for correcting UKCP18 diurnal temperature range
 #' data, as returned by [gamcorrect()].
 "dtr_gam"
-#' 5 km raster of Cornwall
+#' General Additive Model cofficients for correcting UKCP18 specific humidity data
 #'
-#' A 5 km resolution raster of Cornwall with land coded as 1 and sea as NA.
+#' An object of class `gam` containing coefficients for correcting UKCP18 specific
+#' humidity data, where specific humdidity in Kg / Kg has been multiplied by 100,000,
+#' as returned by [gamcorrect()].
+"hus_gam"
+#' General Additive Model cofficients for correcting UKCP18 sea-level pressure data
 #'
-#' @format A raster with 23 rows and 34 columns:
-"msk"
+#' An object of class `gam` containing coefficients for correcting UKCP18 diurnal temperature range
+#' data, as returned by [gamcorrect()].
+"psl_gam"
 #' General Additive Model cofficients for correcting UKCP18 radiation data
 #'
 #' An object of class `gam` containing coefficients for correcting UKCP18 radiation
