@@ -333,10 +333,10 @@ radsplit <- function(ukcpsishourly) {
   ao1 <- list(arraydata = xx1, times = tme, crs = ukcpsishourly$crs,
               extent = ukcpsishourly$extent, units = "Watts / m^2",
               description = "Direct Normal irradiance")
-  ao2 <- list(arraydata = xx2, tme = tme, crs = ukcpsishourly$crs,
+  ao2 <- list(arraydata = xx2, times = tme, crs = ukcpsishourly$crs,
               extent = ukcpsishourly$extent, units = "Watts / m^2",
               description = "Diffuse horizontal irradiance")
-  ao3 <- list(arraydata = xx3, tme = tme, crs = ukcpsishourly$crs,
+  ao3 <- list(arraydata = xx3, times = tme, crs = ukcpsishourly$crs,
               extent = ukcpsishourly$extent, units = "Percentage",
               description = "Cloud cover")
   class(ao1) <- "spatialarray"

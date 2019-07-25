@@ -274,6 +274,29 @@ hourlywind <- function(ukcp_uw, ukcp_vw, ws_gam) {
   class(ao2) <- "spatialarray"
   return(list(ws = ao1, wd = ao2))
 }
-
+#' Saves data by year in specified directory
+#' @param sa a `spatialarray` of data spanning the period in `yrs`
+#' @param yrs a vector of years
+#' @param dirout directory in which to save data. If it does not contain an absolute
+#' path, the directory  name is relative to the current working directory, [getwd()].
+#' Tilde-expansion is performed where supported.
+#' @param filename file name of data to be saved. Each file is saved a sa `spatialarray`
+#' with the following name: `filenameyear.R`
+savebyyear <- function(sa, yrs, dirout, filename) {
+  dir.create(dirout, showWarnings = F)
+  tme <- sa$times
+  a <- sa$arraydata
+  if (length(tme) != dim(a)[3]) {
+    stop("time vector length not equal to number of time entries in array")
+  }
+  for (yr in yrs) {
+    sel <- which(tme$year + 1900 == yr)
+    sao <- sa
+    sao$times <- tme[sel]
+    sao$arraydata <- a[,,sel]
+    fo <- paste0(dirout, filename, yr, ".R")
+    save(sao, file = fo)
+  }
+}
 
 
