@@ -4,6 +4,12 @@
 #'
 #' @format A raster with 23 rows and 34 columns:
 "dem5k"
+#' Digital elevation dataset for UK
+#'
+#' A 60 km resolution raster of elevations in the UK
+#'
+#' @format A raster with 21 rows and 12 columns:
+"dem60k"
 #' Elevation differences between 60 km and 5km resolution data
 #'
 #' A 5 km resolution raster of elevation differences between 60 km and 5km resolution data
