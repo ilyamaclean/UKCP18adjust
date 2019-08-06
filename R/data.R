@@ -27,6 +27,11 @@
 #' humidity data, where specific humdidity in Kg / Kg has been multiplied by 100,000,
 #' as returned by [gamcorrect()].
 "hus_gam"
+#' General Additive Model cofficients for correcting UKCP18 log (precipitation data)
+#'
+#' An object of class `gam` containing coefficients for correcting log of UKCP18 daily precipitation
+#' data, as returned by [gamcorrect()].
+"pre_gam"
 #' General Additive Model cofficients for correcting UKCP18 sea-level pressure data
 #'
 #' An object of class `gam` containing coefficients for correcting UKCP18 diurnal temperature range
