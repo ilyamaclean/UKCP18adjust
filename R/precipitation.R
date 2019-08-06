@@ -93,7 +93,7 @@
 #' grid cell location are then spline interpolated to give daily values. Currently, the
 #' UKCP18 nc files contain errors in both the times and the defined coordinate reference
 #' system. These are corrected in the function, but users are advised to check their data.
-#' @import raster ncdf4 zoo
+#' @import raster ncdf4 zoo microclima
 #' @export
 cropresamplerain <- function(file, r, Trace = TRUE) {
   rain <- .nctoarray(file)
