@@ -282,6 +282,7 @@ hourlywind <- function(ukcp_uw, ukcp_vw, ws_gam) {
 #' Tilde-expansion is performed where supported.
 #' @param filename file name of data to be saved. Each file is saved a sa `spatialarray`
 #' with the following name: `filenameyear.R`
+#' @export
 savebyyear <- function(sa, yrs, dirout, filename) {
   dir.create(dirout, showWarnings = F)
   tme <- sa$times
