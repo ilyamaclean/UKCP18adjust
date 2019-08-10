@@ -101,7 +101,7 @@ sst_fit <- function(temps, Trace = TRUE) {
   dfo$k <- mean(temps$sst) - mean(temps$land)
   if (Trace) {
     pred <- fitone(temps$land, temps$sst, dfo$x1, dfo$x2, dfo$x3, out = "p")
-    tme <- as.POSIXct(tme)
+    tme <- as.POSIXct(temps$obs_time)
     mn <- min(min(pred), min(temps$sst))
     mx <- max(max(pred), max(temps$sst))
     tme <- as.POSIXct(temps$obs_time)
