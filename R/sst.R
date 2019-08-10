@@ -17,6 +17,7 @@
 #'   \item{k}{mean sea-surface temperature - mean land temperature}
 #'}
 #' @seealso [sst_predict()]
+#' @export
 #'
 #' @examples
 #' sstparams <- sst_fit(temperature2017)
@@ -122,6 +123,7 @@ sst_fit <- function(temps, Trace = TRUE) {
 #'
 #' @return a vector of hourly sea-surface temperatures
 #' @seealso [sst_fit()]
+#' @export
 #'
 #' @examples
 #' sstparams <- sst_fit(temperature2017)
@@ -163,6 +165,8 @@ sst_predict <- function(sstparams, htemp) {
 #'   \item{description}{character description of `arraydata`}
 #' }
 #' @return an object of class `spatialarray` of hourly sea-surface temperatures
+#' @export
+#'
 #' @example
 #' library(raster)
 #' # Get vector of hourly sea-surface temperatures
