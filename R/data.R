@@ -27,6 +27,21 @@
 #' humidity data, where specific humdidity in Kg / Kg has been multiplied by 100,000,
 #' as returned by [gamcorrect()].
 "hus_gam"
+#' Monthly sea-surface temperatures in Cornwall
+#'
+#' An object of class `spatialarray` of monthly sea-surface temperatures in Cornwall in 2017
+#'
+#' #' @format A list with the following components:
+#' \describe{
+#'   \item{arraydata}{a three-dimensional array of monthlysea-surface temperatures }
+#'   \item{times}{`POSIXlt` object of times associated with `arraydata`}
+#'   \item{crs}{`crs` object of coordinate reference system associated with `arraydata`}
+#'   \item{extent}{`extent` object giving extent covered by `arraydata`}
+#'   \item{units}{units of `arraydata`}
+#'   \item{description}{character description of `arraydata`}
+#' }
+#' @source \url{www.esrl.noaa.gov/}
+"monthlysst"
 #' General Additive Model cofficients for correcting UKCP18 log (precipitation data)
 #'
 #' An object of class `gam` containing coefficients for correcting log of UKCP18 daily precipitation
@@ -74,6 +89,17 @@
 #' }
 #' @source \url{http://data.ceda.ac.uk/badc/ukcp18/}
 "sis_ukcpdaily"
+#'
+# Hourly land and sea temperatures in 2017
+#'
+#' A data frame of mean daily temperatures across cornwall
+#' @format A dataframe with the following columns:
+#' \describe{
+#'   \item{obs_time}{an object of class `POSIXlt` of observation times}
+#'   \item{land}{land temperatures (Deg C)}
+#'   \item{sst}{Sea-surface temperatures (Deg C)}
+#' }
+"temperature2017"
 #' Daily maximum temperature (UKCP18).
 #'
 #' An object of class spatialarray containing daily maximum temperature values in Cornwall for
