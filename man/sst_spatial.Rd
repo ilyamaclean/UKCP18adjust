@@ -4,7 +4,7 @@
 \alias{sst_spatial}
 \title{Generates spatial array of sea-surface temperatures}
 \usage{
-sst_spatial(sstv, monthlysst)
+sst_spatial(sstv, monthlysst, year)
 }
 \arguments{
 \item{sstv}{vector of hourly sea surface temperatures over one year}
@@ -19,6 +19,9 @@ sea-surface tempertaures in each month with the following components:
 \item{units}{units of \code{arraydata}}
 \item{description}{character description of \code{arraydata}}
 }}
+
+\item{year}{year for which output data required. Used to derive correct number of
+hourly values}
 }
 \value{
 an object of class \code{spatialarray} of hourly sea-surface temperatures

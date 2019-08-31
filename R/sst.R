@@ -164,6 +164,8 @@ sst_predict <- function(sstparams, htemp) {
 #'   \item{units}{units of `arraydata`}
 #'   \item{description}{character description of `arraydata`}
 #' }
+#' @param year year for which output data required. Used to derive correct number of
+#' hourly values
 #' @return an object of class `spatialarray` of hourly sea-surface temperatures
 #' @export
 #'
@@ -180,11 +182,15 @@ sst_predict <- function(sstparams, htemp) {
 #' sstjan <- apply(ssta$arraydata[,,sel], c(1, 2), mean, na.rm = T)
 #' r <- microclima::if_raster(sstjan, dem5k)
 #' plot(r)
-sst_spatial <- function(sstv, monthlysst) {
+sst_spatial <- function(sstv, monthlysst, year) {
   tme.mon <- monthlysst$times
+  yr <- tme.mon$year[1] + 1900
+  yr1 <- as.POSIXlt(0, origin = paste0(yr, "-01-01 00:00"), tz = "GMT")
+  yr2 <- as.POSIXlt(0, origin = paste0(year, "-01-01 00:00"), tz = "GMT")
+  tadd <- as.numeric(yr2) - as.numeric(yr1)
+  tme.mon <- as.POSIXlt(tme.mon + tadd)
   hiy <- 365 * 24
-  yr <- as.numeric(tme.mon$year[1] + 1900)
-  if (yr%%4 == 0) hiy <- 366 * 24
+  if (year%%4 == 0) hiy <- 366 * 24
   x0 <- as.numeric(tme.mon[length(tme.mon)]) - hiy * 3600
   x0 <- as.POSIXlt(x0, origin = "1970-01-01 00:00", tz = "GMT")
   x1 <- as.numeric(tme.mon[1]) + hiy * 3600
@@ -195,7 +201,7 @@ sst_spatial <- function(sstv, monthlysst) {
   tmeh <- as.POSIXlt(tmeh, origin = "1970-01-01", tz = "GMT")
   ain <- monthlysst$arraydata
   aout <- array(NA, dim = c(dim(ain)[1:2], hiy))
-  sel <- which(tmeh$year + 1900 == yr)
+  sel <- which(tmeh$year + 1900 == year)
   for (i in 1:dim(ain)[1]) {
     for (j in 1:dim(ain)[2]) {
       tst <- mean(ain[i,j,], na.rm = T)
