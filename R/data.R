@@ -29,7 +29,7 @@
 "hus_gam"
 #' Monthly sea-surface temperatures in Cornwall
 #'
-#' An object of class `spatialarray` of monthly sea-surface temperatures in Cornwall in 2017
+#' An object of class `spatialarray` of monthly sea-surface temperature anomolies in Cornwall in 2017
 #'
 #' #' @format A list with the following components:
 #' \describe{

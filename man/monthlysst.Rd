@@ -4,7 +4,7 @@
 \name{monthlysst}
 \alias{monthlysst}
 \title{Monthly sea-surface temperatures in Cornwall}
-\format{An object of class \code{list} of length 6.}
+\format{An object of class \code{spatialarray} of length 6.}
 \source{
 \url{www.esrl.noaa.gov/}
 }
@@ -12,7 +12,7 @@
 monthlysst
 }
 \description{
-An object of class \code{spatialarray} of monthly sea-surface temperatures in Cornwall in 2017
+An object of class \code{spatialarray} of monthly sea-surface temperature anomolies in Cornwall in 2017
 }
 \details{
 #' @format A list with the following components:
