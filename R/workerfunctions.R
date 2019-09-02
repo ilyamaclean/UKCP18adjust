@@ -26,6 +26,9 @@
 #' @export
 cropresamplenc <- function(file, r, Trace = TRUE) {
   nc <- nc_open(file)
+  # find correct base year
+  nn <- nchar(file)
+  yr <- as.numeric(substring(file, nn - 19, nn - 16))
   tme <- ncvar_get(nc, varid = 'time')
   tme <- as.POSIXlt(tme * 3600, origin = "1970-01-01", tz = "GMT")
   a <- .nctoarray(file)
