@@ -11,6 +11,10 @@ hourlysis(dailysis, modfit, rad_gam = NA, Trace = T)
 
 \item{modfit}{a list of semivariagram model coefficients as returned by \code{\link[=radfit]{radfit()}}}
 
+\item{rad_gam}{an optional gam object of correction coefficients
+to apply to radiation data as returned by \code{\link[=gamcorrect]{gamcorrect()}}. The default is for no
+correction to be applied.}
+
 \item{Trace}{logical value indicating whether to plot progress}
 }
 \value{
@@ -38,7 +42,7 @@ paramaters from \code{modfit}.
 # Takes a few seconds to run
 modfit <- radfit(sis_2005)
 # Takes a few minutes to run
-ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000)
+ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit)
 }
 \seealso{
 \code{\link[=radfit]{radfit()}}

@@ -26,7 +26,7 @@ Partition radiation into its direct and diffuse components
 # Takes a few seconds to run
 modfit <- radfit(sis_2005)
 # Takes a few minutes to run
-ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000, rad_gam)
+ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, rad_gam)
 radcom <- radsplit(ukcpsishourly)
 attributes(radcom)
 }

@@ -79,6 +79,9 @@ radfit <- function(sis) {
 #'
 #' @param dailysis an object of class spatialarray with hourly radiation values
 #' @param modfit a list of semivariagram model coefficients as returned by [radfit()]
+#' @param rad_gam an optional gam object of correction coefficients
+#' to apply to radiation data as returned by [gamcorrect()]. The default is for no
+#' correction to be applied.
 #' @param Trace logical value indicating whether to plot progress
 #' @return an object of class spatialarray containing the following components:
 #' \describe{
@@ -102,7 +105,7 @@ radfit <- function(sis) {
 #' # Takes a few seconds to run
 #' modfit <- radfit(sis_2005)
 #' # Takes a few minutes to run
-#' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000)
+#' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit)
 hourlysis <- function(dailysis, modfit, rad_gam = NA, Trace = T) {
   a <- dailysis$arraydata
   tme <- dailysis$times
@@ -261,7 +264,7 @@ hourlysis <- function(dailysis, modfit, rad_gam = NA, Trace = T) {
 #' # Takes a few seconds to run
 #' modfit <- radfit(sis_2005)
 #' # Takes a few minutes to run
-#' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, 2000, rad_gam)
+#' ukcpsishourly <- hourlysis(sis_ukcpdaily, modfit, rad_gam)
 #' radcom <- radsplit(ukcpsishourly)
 #' attributes(radcom)
 radsplit <- function(ukcpsishourly) {
@@ -295,32 +298,9 @@ radsplit <- function(ukcpsishourly) {
         pdni[is.na(pdni)] <- 0
         pdni[pdni > 1352.778] <- 1352.778
         pdif[pdif > 1352.778] <- 1352.778
-        # Compute maximum potential radiation
-        # Calculate optical depth
-        ext <- sis / 1352.778
-        am <- airmasscoef(tme$hour, ll$y, ll$x, jd, merid = 0)
-        od <- log(ext) / (- am)
-        # Adjusting optical depths
-        odd <- matrix(od, ncol = 24, byrow = T)
-        odd <- apply(odd, 1, mean, na.rm = T)
-        odd <- rep(odd, each = 24)
-        lN <- -0.78287 -0.43582 * log(odd)
-        N <- exp(lN)
-        od <- suppressWarnings(log(ext) / (- am^N))
-        od[od > 10] <- NA
-        od[od < 0] <- NA
-        # Maximum radiation
-        mdir <- si * 1352.778
-        n <- sis / mdir
-        n[n > 1] <- NA
-        n[n < 0] <- 0
-        le <- length(n)
-        n[1] <- mean(n[1:24], na.rm = T)
-        n[le] <- mean(n[(le-24):le], na.rm = T)
-        n <- na.approx(n)
         dni[i,j,] <- pdni
         dif[i,j,] <- pdif
-        cfc[i,j,] <- 1 - n
+        cfc[i,j,] <- cloudfromrad(sis, tme, ll$y, ll$x, merid = 0)
       }
     }
   }
