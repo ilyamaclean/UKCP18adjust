@@ -44,7 +44,7 @@ cropresamplenc <- function(file, r, Trace = TRUE) {
   nca <- ncatt_get(nc, varid = varname)
   nc_close(nc)
   # Correct time error
-  tme <- .tmecreate(tme$year[1] + 1900)
+  tme <- .tmecreate(yr)
   lst <- list(arraydata = ao, times = tme, crs = crs(r),
               extent = ecrop, units = nca[[3]], description = nca[[2]])
   class(lst) <- "spatialarray"
